@@ -29,10 +29,16 @@ export default function LandingPage() {
         </p>
         <div className="mt-10 flex justify-center gap-4">
           <Link
-            href="/login"
+            href="/v2"
             className="rounded-lg px-6 py-3 font-medium bg-brand-600 hover:bg-brand-700 transition-colors"
           >
-            Get started free
+            Go to Dashboard (v2)
+          </Link>
+          <Link
+            href="/login"
+            className="rounded-lg px-6 py-3 font-medium bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            Sign in
           </Link>
         </div>
       </section>
@@ -41,15 +47,27 @@ export default function LandingPage() {
         {[
           {
             title: "📄 Smart ingestion",
-            body: "PDF, TXT, MD, CSV — parsed, cleaned, and recursively chunked with overlap.",
+            body: "PDF, DOCX, PPTX, TXT, MD, CSV — async pipeline with streaming status updates.",
           },
           {
-            title: "🔎 Cited answers",
-            body: "Powered by Jina embeddings + Pinecone retrieval and a Groq Llama 3.1 model.",
+            title: "🔎 Ranked answers + streaming",
+            body: "Jina embeddings → Pinecone retrieval → reranking → streaming Groq Llama 3.1 answers with cited sources.",
+          },
+          {
+            title: "🔗 Embeddable widget",
+            body: "One <script> tag → iframe-isolated floating bubble on any website, secured by an embed key.",
           },
           {
             title: "📭 Missing-answers loop",
-            body: "Captures questions your bot couldn't answer so you can fill the gaps.",
+            body: "Captures unanswered questions; one-click 'Add data' re-embeds the answer immediately.",
+          },
+          {
+            title: "🤖 Multi-bot per account",
+            body: "Create multiple bots, each with its own knowledge base, persona, and widget.",
+          },
+          {
+            title: "⚡ Clean architecture",
+            body: "SOLID ports-and-adapters design — providers are swappable, use-cases are independently testable.",
           },
         ].map((f) => (
           <div

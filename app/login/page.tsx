@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) router.replace("/dashboard");
+    if (!loading && user) router.replace("/v2");
   }, [user, loading, router]);
 
   async function handleEmail(e: React.FormEvent) {
