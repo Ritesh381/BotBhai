@@ -19,12 +19,14 @@ export class FirestoreDocumentRepository implements DocumentRepository {
   }
 
   async listByBot(botId: string): Promise<Document[]> {
+    // Sort in memory to avoid requiring a composite (botId, uploadedAt) index.
     const snap = await this.db
       .collection(COLLECTION)
       .where("botId", "==", botId)
-      .orderBy("uploadedAt", "desc")
       .get();
-    return snap.docs.map((d) => d.data() as Document);
+    return snap.docs
+      .map((d) => d.data() as Document)
+      .sort((a, b) => b.uploadedAt - a.uploadedAt);
   }
 
   async updateStatus(id: string, patch: StatusPatch): Promise<void> {

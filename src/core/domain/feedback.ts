@@ -9,5 +9,6 @@ export interface Feedback {
   answer: string;
   rating: FeedbackRating;
   comment?: string;
+  resolved?: boolean;
   createdAt: number;
 }

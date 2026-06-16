@@ -14,13 +14,25 @@ export class FirestoreFeedbackRepository implements FeedbackRepository {
   }
 
   async listLowRatedByBot(botId: string, limit = 50): Promise<Feedback[]> {
+    // Sort + filter in memory to avoid requiring a composite index.
     const snap = await this.db
       .collection(COLLECTION)
       .where("botId", "==", botId)
       .where("rating", "==", "down")
-      .orderBy("createdAt", "desc")
-      .limit(limit)
       .get();
-    return snap.docs.map((d) => d.data() as Feedback);
+    return snap.docs
+      .map((d) => d.data() as Feedback)
+      .filter((f) => !f.resolved)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit);
+  }
+
+  async findById(id: string): Promise<Feedback | null> {
+    const snap = await this.db.collection(COLLECTION).doc(id).get();
+    return snap.exists ? (snap.data() as Feedback) : null;
+  }
+
+  async resolve(id: string): Promise<void> {
+    await this.db.collection(COLLECTION).doc(id).update({ resolved: true });
   }
 }

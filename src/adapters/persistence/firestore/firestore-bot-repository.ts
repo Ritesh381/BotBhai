@@ -19,12 +19,14 @@ export class FirestoreBotRepository implements BotRepository {
   }
 
   async findByOwner(ownerId: string): Promise<Bot[]> {
+    // Sort in memory to avoid requiring a composite (ownerId, updatedAt) index.
     const snap = await this.db
       .collection(COLLECTION)
       .where("ownerId", "==", ownerId)
-      .orderBy("updatedAt", "desc")
       .get();
-    return snap.docs.map((d) => d.data() as Bot);
+    return snap.docs
+      .map((d) => d.data() as Bot)
+      .sort((a, b) => b.updatedAt - a.updatedAt);
   }
 
   async update(botId: string, patch: Partial<BotEditableFields>): Promise<Bot> {

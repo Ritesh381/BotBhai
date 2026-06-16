@@ -4,12 +4,22 @@ import { useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { auth } from "@/lib/firebase/client";
 import { Button } from "@/components/ui/Button";
+import { Markdown } from "@/components/ui/Markdown";
 
 interface Message {
+  id?: string;
   role: "user" | "bot";
   content: string;
+  question?: string;
   sources?: { filename: string; snippet: string; score: number }[];
   confident?: boolean;
+  feedback?: "up" | "down";
+}
+
+function newId(): string {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `m_${Date.now()}_${Math.round(Math.random() * 1e6)}`;
 }
 
 export default function TestChatPage() {
@@ -19,6 +29,33 @@ export default function TestChatPage() {
   const [streaming, setStreaming] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
+  async function sendFeedback(index: number, rating: "up" | "down") {
+    const msg = messages[index];
+    if (!msg || msg.role !== "bot" || msg.feedback) return;
+    setMessages((m) => {
+      const copy = [...m];
+      copy[index] = { ...copy[index], feedback: rating };
+      return copy;
+    });
+    try {
+      const user = auth.currentUser;
+      const token = user ? await user.getIdToken() : "";
+      await fetch(`/api/bots/${botId}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          rating,
+          question: msg.question || "",
+          answer: msg.content || "",
+          messageId: msg.id,
+          conversationId: "playground",
+        }),
+      });
+    } catch {
+      /* non-blocking */
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const question = input.trim();
@@ -26,7 +63,7 @@ export default function TestChatPage() {
     setInput("");
     setMessages((m) => [...m, { role: "user", content: question }]);
     setStreaming(true);
-    setMessages((m) => [...m, { role: "bot", content: "" }]);
+    setMessages((m) => [...m, { id: newId(), role: "bot", content: "", question }]);
 
     try {
       const user = auth.currentUser;
@@ -104,7 +141,13 @@ export default function TestChatPage() {
             <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
               m.role === "user" ? "bg-brand-600 text-white" : "bg-white/[0.06] text-gray-100"
             }`}>
-              <p className="whitespace-pre-wrap">{m.content}{streaming && i === messages.length - 1 && m.role === "bot" && !m.content ? "…" : ""}</p>
+              {m.role === "user" ? (
+                <p className="whitespace-pre-wrap">{m.content}</p>
+              ) : m.content ? (
+                <Markdown>{m.content}</Markdown>
+              ) : (
+                <p className="text-gray-400">{streaming && i === messages.length - 1 ? "…" : ""}</p>
+              )}
               {m.sources && m.sources.length > 0 && (
                 <details className="mt-3 text-xs text-gray-400">
                   <summary className="cursor-pointer hover:text-gray-200">📎 {m.sources.length} source{m.sources.length > 1 ? "s" : ""}</summary>
@@ -117,6 +160,33 @@ export default function TestChatPage() {
                     ))}
                   </ul>
                 </details>
+              )}
+              {/* Thumbs feedback — only on finished bot answers */}
+              {m.role === "bot" && m.content && !(streaming && i === messages.length - 1) && (
+                <div className="mt-2 flex items-center gap-1">
+                  {m.feedback ? (
+                    <span className="text-xs text-gray-500">
+                      {m.feedback === "up" ? "Marked helpful 👍" : "Marked not helpful — see Feedback tab 👎"}
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        aria-label="Good answer"
+                        onClick={() => sendFeedback(i, "up")}
+                        className="text-sm px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
+                      >
+                        👍
+                      </button>
+                      <button
+                        aria-label="Bad answer"
+                        onClick={() => sendFeedback(i, "down")}
+                        className="text-sm px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
+                      >
+                        👎
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>

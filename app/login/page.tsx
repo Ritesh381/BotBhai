@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export default function LoginPage() {
   const { user, loading, signInGoogle, signInEmail, signUpEmail } = useAuth();
@@ -16,7 +17,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) router.replace("/v2");
+    if (!loading && user) router.replace("/dashboard");
   }, [user, loading, router]);
 
   async function handleEmail(e: React.FormEvent) {
@@ -48,9 +49,10 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold text-center mb-1">
-          BotBhai <span className="text-brand-500">🤖</span>
-        </h1>
+        <div className="flex justify-center mb-3">
+          <Logo size={64} withWordmark={false} />
+        </div>
+        <h1 className="text-3xl font-bold text-center mb-1">BotBhai</h1>
         <p className="text-center text-gray-400 mb-8 text-sm">
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </p>

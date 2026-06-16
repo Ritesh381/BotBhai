@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/v2/api-client";
+import { useBots } from "@/lib/v2/bots-context";
 
 type Tone = "professional" | "friendly" | "humorous";
 const TONES: { value: Tone; label: string }[] = [
@@ -32,6 +33,7 @@ interface BotSettings {
 export default function SettingsPage() {
   const { botId } = useParams<{ botId: string }>();
   const { user } = useAuth();
+  const { refresh } = useBots();
   const [bot, setBot] = useState<BotSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -54,6 +56,8 @@ export default function SettingsPage() {
       retrievalConfig: bot.retrievalConfig,
       modelConfig: bot.modelConfig,
     });
+    // Sync the shared bots list so the sidebar reflects the new name without a reload.
+    await refresh();
     setSaved(true); setBusy(false);
   }
 

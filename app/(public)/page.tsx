@@ -1,12 +1,11 @@
 import Link from "next/link";
+import { Logo } from "@/components/ui/Logo";
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen">
       <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <span className="text-xl font-bold">
-          BotBhai <span className="text-brand-500">🤖</span>
-        </span>
+        <Logo size={36} className="text-xl" />
         <div className="flex gap-3">
           <Link
             href="/login"
@@ -17,7 +16,8 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="max-w-3xl mx-auto px-6 pt-24 pb-16 text-center">
+      <section className="max-w-3xl mx-auto px-6 pt-20 pb-16 text-center">
+        <Logo size={96} withWordmark={false} className="mb-6 justify-center" />
         <h1 className="text-5xl font-bold leading-tight">
           Build an AI chatbot from <span className="text-brand-500">your</span>{" "}
           documents.
@@ -29,10 +29,10 @@ export default function LandingPage() {
         </p>
         <div className="mt-10 flex justify-center gap-4">
           <Link
-            href="/v2"
+            href="/dashboard"
             className="rounded-lg px-6 py-3 font-medium bg-brand-600 hover:bg-brand-700 transition-colors"
           >
-            Go to Dashboard (v2)
+            Go to Dashboard
           </Link>
           <Link
             href="/login"

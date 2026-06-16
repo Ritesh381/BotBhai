@@ -47,13 +47,15 @@ export class FirestoreMissingAnswerRepository implements MissingAnswerRepository
   }
 
   async listByBot(botId: string, status: MissingStatus): Promise<MissingEntry[]> {
+    // Sort in memory to avoid requiring a composite (botId, status, timesAsked) index.
     const snap = await this.db
       .collection(COLLECTION)
       .where("botId", "==", botId)
       .where("status", "==", status)
-      .orderBy("timesAsked", "desc")
       .get();
-    return snap.docs.map((d) => d.data() as MissingEntry);
+    return snap.docs
+      .map((d) => d.data() as MissingEntry)
+      .sort((a, b) => b.timesAsked - a.timesAsked);
   }
 
   async findById(id: string): Promise<MissingEntry | null> {

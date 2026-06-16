@@ -20,7 +20,7 @@ export class SubmitFeedback {
   ) {}
 
   async execute(input: SubmitFeedbackInput): Promise<Result<Feedback>> {
-    const f: Feedback = { ...input, id: this.newId(), createdAt: Date.now() };
+    const f: Feedback = { ...input, id: this.newId(), resolved: false, createdAt: Date.now() };
     await this.feedback.record(f);
     return ok(f);
   }

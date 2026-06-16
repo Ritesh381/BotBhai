@@ -31,16 +31,21 @@ export default function FeedbackPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  async function resolve(id: string) {
+    await api.post(`/api/bots/${botId}/feedback`, { action: "resolve", id });
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+  }
+
   async function revise(entry: FeedbackEntry) {
     if (!revision.trim()) return;
     setBusy(true);
-    // Add corrected answer to the knowledge base via add-data (which re-embeds)
-    // We create a synthetic missing-entry resolve flow by posting to /missing directly,
-    // but the simpler path is to just post to paste-source and flag it as a correction.
+    // Embed the correction into the knowledge base, then resolve the entry so
+    // it leaves the list (the fix is now retrievable on the next query).
     await api.post(`/api/bots/${botId}/sources/paste`, {
       title: `Correction: ${entry.question.slice(0, 60)}`,
       text: `Question: ${entry.question}\n\nAnswer: ${revision}`,
     });
+    await resolve(entry.id);
     setEditing(null);
     setRevision("");
     setBusy(false);
@@ -74,13 +79,17 @@ export default function FeedbackPage() {
                     <p className="text-gray-500 text-xs mt-1 italic">"{e.comment}"</p>
                   )}
                 </div>
-                <Button
-                  variant="secondary"
-                  className="shrink-0"
-                  onClick={() => setEditing(editing === e.id ? null : e.id)}
-                >
-                  Revise
-                </Button>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setEditing(editing === e.id ? null : e.id)}
+                  >
+                    Revise
+                  </Button>
+                  <Button variant="ghost" onClick={() => resolve(e.id)}>
+                    Dismiss
+                  </Button>
+                </div>
               </div>
               {editing === e.id && (
                 <div className="space-y-2 pt-2 border-t border-white/10">
